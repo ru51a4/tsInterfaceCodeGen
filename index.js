@@ -44,14 +44,16 @@ class tsInterfaceCodeGen {
         let r = [];
         nodes = nodes.sort((a, b) => a.childrens.filter((c) => c.childrens.length).length - b.childrens.filter((c) => c.childrens.length).length).filter((c) => !c.isArray);
         let resStr = '';
+        let hack = [];
         let dfs = (node) => {
+            hack[`I${node.key}`] = true;
             resStr += `interface I${node.key} {\n`
             node?.childrens.forEach((node) => {
                 let arr = (node.isArray && node.childrens) ? '[]' : ''
                 if (node.value === '') {
                     let a = nodes?.childrens?.[0].key
                     let keyZaeb = nodes?.childrens?.filter((c) => c.key !== a)?.length;
-                    resStr += `${node.key}: ${arr}${(!keyZaeb && a) ? `I` + node.key : 'any'};\n`
+                    resStr += `${node.key}: ${arr}${(hack[`I${node.key}`] || (!keyZaeb && a)) ? `I` + node.key : 'any'};\n`
                 } else {
                     resStr += `${node.key}: ${arr}${typeof node.value};\n`
                 }
