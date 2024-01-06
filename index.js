@@ -11,7 +11,7 @@ class node {
 }
 
 class tsInterfaceCodeGen {
-    static gen(str) {
+    static gen(str, type) {
         let obj = JSON.parse(str)
         let i = 0;
         let uuidv4 = () => {
@@ -47,9 +47,10 @@ class tsInterfaceCodeGen {
         let resStr = '';
         let hack = [];
         nodes.forEach((c) => hack[`I${c.key}`] = `I${c.key}`);
-        let iter = (node) => {
+        let iterTs = (node) => {
             resStr += `interface I${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")} {\n`
             node?.childrens.forEach((node) => {
+                resStr += "\t";
                 let arr = (node.isArray && node.childrens) ? '[]' : ''
                 let types = _.uniq(node?.childrens?.map((node) => typeof node.value))
                 if (node.value === '') {
@@ -65,10 +66,33 @@ class tsInterfaceCodeGen {
             resStr += `} \n`
         }
 
+        let iterPhpDto = (node) => {
+            let mapTypes = [];
+            mapTypes['number'] = "int";
+            mapTypes['string'] = "string";
+
+            resStr += `class Dto${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")} {\n`
+            node?.childrens.forEach((node) => {
+                resStr += "\t";
+                let arr = (node.isArray && node.childrens) ? '[]' : ''
+                if (hack[`I${node.key}`]) {
+                    resStr += `public Dto${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")}${arr} $${node.key};\n`
+                }
+                else {
+                    resStr += (arr) ? `public array $${node.key}; \n` : `public ${mapTypes[typeof node.value]} $${node.key}; \n`
+                }
+            });
+            resStr += `} \n`
+        }
+        let mapfunc = [];
+        mapfunc[1] = iterTs;
+        mapfunc[2] = iterPhpDto;
+
+
         while (nodes.length) {
             let n = nodes.shift();
             resStr = '';
-            iter(n);
+            mapfunc[type](n);
             r.push(resStr);
         }
         return (r.reverse().join("\n"));

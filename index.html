@@ -11,7 +11,10 @@
     <div class="container">
         <div class="row mt-5">
             <div class="col-12 d-flex flex-column align-items-center">
-
+                <select onchange="changetype(event.target.value)">
+                    <option value="1">ts interface</option>
+                    <option value="2">php dto</option>
+                </select>
             </div>
         </div>
         <div class="row mt-5">
@@ -58,11 +61,15 @@
     </div>
 </body>
 <script>
+    var type = 1;
+    function changetype(_type) {
+        type = _type;
+    }
     const scssCompiler = tsInterfaceCodeGen;
     let scss = document.querySelector('#scss');
     let css = document.querySelector('#css');
     document.querySelector("button").addEventListener('click', () => {
-        css.value = scssCompiler.gen(scss.value);
+        css.value = scssCompiler.gen(scss.value, type);
     }, false);
     document.querySelector('#scss').addEventListener('keydown', function (e) {
         if (e.key == 'Tab') {
