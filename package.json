@@ -10,5 +10,8 @@
   "license": "ISC",
   "devDependencies": {
     "jest": "^27.4.3"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
   }
 }

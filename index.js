@@ -1,3 +1,4 @@
+var _ = require('lodash');
 
 class node {
     childrens = [];
@@ -50,17 +51,18 @@ class tsInterfaceCodeGen {
             resStr += `interface I${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")} {\n`
             node?.childrens.forEach((node) => {
                 let arr = (node.isArray && node.childrens) ? '[]' : ''
+                let types = _.uniq(node?.childrens?.map((node) => typeof node.value))
                 if (node.value === '') {
                     if (hack[`I${node.key}`]) {
                         resStr += `${node.key}: I${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")}${arr};\n`
-                    } else {
-                        resStr += `${node.key}: any;\n`
+                    } else if (types.length > 1) {
+                        resStr += `${node.key}: ${arr ? 'Array<' : ''}${types.join(" | ")}${arr ? '>' : ''};\n`
                     }
                 } else {
-                    resStr += `${node.key}: ${typeof node.value}${arr};\n`
+                    resStr += `${node.key}: ${typeof node.value}${arr}; \n`
                 }
             });
-            resStr += `}\n`
+            resStr += `} \n`
         }
 
         while (nodes.length) {
