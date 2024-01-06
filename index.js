@@ -45,17 +45,19 @@ class tsInterfaceCodeGen {
         nodes = nodes.sort((a, b) => a.childrens.filter((c) => c.childrens.length).length - b.childrens.filter((c) => c.childrens.length).length).filter((c) => !c.isArray);
         let resStr = '';
         let hack = [];
-        nodes.forEach((c) => hack[`I${c.key}`] = true);
-        let blya = (node) => {
-            resStr += `interface I${node.key} {\n`
+        nodes.forEach((c) => hack[`I${c.key}`] = `I${c.key}`);
+        let iter = (node) => {
+            resStr += `interface I${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")} {\n`
             node?.childrens.forEach((node) => {
                 let arr = (node.isArray && node.childrens) ? '[]' : ''
                 if (node.value === '') {
-                    let a = nodes?.childrens?.[0].key
-                    let keyZaeb = nodes?.childrens?.filter((c) => c.key !== a)?.length;
-                    resStr += `${node.key}: ${arr}${(hack[`I${node.key}`] || (!keyZaeb && a)) ? `I` + node.key : 'any'};\n`
+                    if (hack[`I${node.key}`]) {
+                        resStr += `${node.key}: I${node.key.split("").map((ch, i) => i == 0 ? ch.toUpperCase() : ch).join("")}${arr};\n`
+                    } else {
+                        resStr += `${node.key}: any;\n`
+                    }
                 } else {
-                    resStr += `${node.key}: ${arr}${typeof node.value};\n`
+                    resStr += `${node.key}: ${typeof node.value}${arr};\n`
                 }
             });
             resStr += `}\n`
@@ -64,7 +66,7 @@ class tsInterfaceCodeGen {
         while (nodes.length) {
             let n = nodes.shift();
             resStr = '';
-            blya(n);
+            iter(n);
             r.push(resStr);
         }
         return (r.reverse().join("\n"));
